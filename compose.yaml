@@ -1,0 +1,23 @@
+name: aiability-crm
+services:
+  database:
+    image: postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+    environment:
+      POSTGRES_DB: crm
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run npm run setup:local first}
+      CRM_APP_PASSWORD: ${CRM_APP_PASSWORD:?Run npm run setup:local first}
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-54329}:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/postgres/001-runtime-role.sh:/docker-entrypoint-initdb.d/001-runtime-role.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d crm']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
